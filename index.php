@@ -21,7 +21,7 @@
         <a href="#news">News</a>
         <a href="#contact">Contact</a>
         <a href="#about">About</a>
-        <a href="signup.html" class="active">Sign Up</a>
+        <a href="signup.php" class="active">Sign Up</a>
         <a href="javascript:void(0);" class="icon" onclick="myFunction()">
           <i class="fa fa-bars"></i>
         </a>

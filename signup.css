@@ -2,7 +2,7 @@ body {font-family: Arial, Helvetica, sans-serif;}
 * {box-sizing: border-box;}
 
 /* Full-width input fields */
-input[type=text], input[type=password] {
+input[type=text], input[type=email], input[type=number], input[type=password] {
   width: 100%;
   padding: 15px;
   margin: 2px 0 10px 0;
@@ -12,7 +12,7 @@ input[type=text], input[type=password] {
 }
 
 /* Add a background color when the inputs get focus */
-input[type=text]:focus, input[type=password]:focus {
+input[type=text]:focus, input[type=email]:focus, input[type=number]:focus, input[type=password]:focus {
   background-color: #ddd;
   outline: none;
 }
@@ -21,7 +21,7 @@ input[type=text]:focus, input[type=password]:focus {
 button {
   background-color: #33031f;
   color: white;
-  align-self: flex-end;
+  align-self:center;
   padding: 14px 20px;
   margin: 8px 0; 
   border: #0f0211;
@@ -34,14 +34,14 @@ button:hover {
   opacity:1;
 }
 
-/* Extra styles for the cancel button */
+/* Extra styles for the cancel button*/
 .cancelbtn {
   padding: 14px 20px;
   background-color: #5a0e69;
 }
 
 /* Float cancel and signup buttons and add an equal width */
-.cancelbtn, .signupbtn {
+ .cancelbtn, .signupbtn {
   float: right;
   width: 50%;
 }
