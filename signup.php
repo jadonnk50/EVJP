@@ -68,16 +68,22 @@ require_once('config.php')
 
       <div class="clearfix">
         <button type="button" onclick="document.getElementById('id01').style.display='none'" class="cancelbtn">Log in Instead</button>
-        <button type="submit" name="create" class="signupbtn">Sign Up</button>
+        <button type="submit" name="create" id="register" class="signupbtn">Sign Up</button>
       </div>
     </div>
   </form>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
   $(function(){
-    alert('Hello');
-    console.log("hello");
+    $('#register').click(function(){
+      Swal.fire(
+        title: 'Successful!',
+        text: 'Register Successfully',
+        icon: 'success',
+      )    
+    })
   });
 </body>
 </html>
