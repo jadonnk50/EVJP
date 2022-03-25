@@ -9,14 +9,16 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: 'pk.eyJ1IjoiamFkb25uazUwIiwiYSI6ImNsMHgzb3IzcTFnaGIzZG41OHJpbWNhd3YifQ.iRmUKqleOXpk27nXvL-zkA'
 }).addTo(map);
 
-const api_url = 'https://chargepoints.dft.gov.uk/api/retrieve/registry/format/json';
+const api_url = 'https://chargepoints.dft.gov.uk/api/retrieve/registry/lat/57.1189654/long/-2.138283/dist/1/format/json';
 async function getNCR() {
     const response = await fetch(api_url);
     const data = await response.json();
     console.log(data)
+    console.log(data.ChargeDevice.ChargeDeviceName)
 }
-
 getNCR();
+
+L.marker([50.5, 30.5]).addTo(map);
 
 
 // L.JSON(chargepointJson).addTo(map)
