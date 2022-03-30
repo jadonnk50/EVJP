@@ -37,10 +37,10 @@
       
       <div class="journeydetails">
         <form id='journey' >
-          <input type="text" id="start" name="start" placeholder="The starting point of your trip" required>
-          <input type="text" id="finish" name="finish" placeholder="Destination" required>
-          <input type="text" id="SOC" name="SOC" placeholder="Departure Charge %" required value="256">
-          <input type="text" id="EVrange" name="EVrange" placeholder="Vehicle Range" required>      
+          <input type="text" id="journeystart" name="start" placeholder="The starting point of your trip" required>
+          <input type="text" id="journeyfinish" name="finish" placeholder="Destination" required>
+          <input type="text" id="evSOC" name="SOC" placeholder="Departure Charge %" required>
+          <input type="text" id="EVrange" name="Vrange" placeholder="Vehicle Range" required>      
           <select id="charger" name="Charger Type" >
             <option value="rapid">Rapid Charge</option>
             <option value="fast">Fast Charge</option>
@@ -74,3 +74,8 @@
 <script src="journeyplanner.js"></script>
 <script src="./sidenav.js"></script>
 <script src="signup.js"></script>
+<!-- <script>
+
+
+
+</script> -->
