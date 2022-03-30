@@ -9,28 +9,6 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: 'pk.eyJ1IjoiamFkb25uazUwIiwiYSI6ImNsMHgzb3IzcTFnaGIzZG41OHJpbWNhd3YifQ.iRmUKqleOXpk27nXvL-zkA'
 }).addTo(map);
 
-//getting the form data
-function JourneyForm(event){
-    event.preventDefault();
-    console.log('form submited');
-    
-
-    //getting the form data
-    var jstart   = document.getElementById('journeystart').value;
-    var jfinish  = document.getElementById('journeyfinish').value;
-    var SOC      = document.getElementById("evSOC").value;
-    var EVrange  = document.getElementById("EVrange").value;
-    var charger  = document.getElementById("charger").value;
-    console.log(jstart)
-    console.log(EVrange)
-}
-
-  // get Journey planner Form
-const journeyForm = document.getElementById('journey');
-
-// add listener to the form
-journeyForm.addEventListener('submit', JourneyForm)
-
 var fullBatteryCharge = 75
 var evCarRange = 108
 
@@ -82,3 +60,26 @@ chargestations();
                 console.log(error)
             })
         }
+
+
+//getting the form data
+function JourneyForm(event){
+    event.preventDefault();
+    console.log('form submited');
+    
+
+    //getting the form data
+    var jstart   = document.getElementById('journeystart').value;
+    var jfinish  = document.getElementById('journeyfinish').value;
+    var SOC      = document.getElementById("evSOC").value;
+    var EVrange  = document.getElementById("EVrange").value;
+    var charger  = document.getElementById("charger").value;
+    console.log(jstart)
+    console.log(EVrange)
+}
+
+  // get Journey planner Form
+const journeyForm = document.getElementById('journey');
+
+// add listener to the form
+journeyForm.addEventListener('submit', JourneyForm)
