@@ -9,16 +9,62 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: 'pk.eyJ1IjoiamFkb25uazUwIiwiYSI6ImNsMHgzb3IzcTFnaGIzZG41OHJpbWNhd3YifQ.iRmUKqleOXpk27nXvL-zkA'
 }).addTo(map);
 
-const api_url = 'https://chargepoints.dft.gov.uk/api/retrieve/registry/lat/57.1189654/long/-2.138283/dist/1/format/json';
-async function getNCR() {
-    const response = await fetch(api_url);
-    const data = await response.json();
-    console.log(data)
-    console.log(data.ChargeDevice.ChargeDeviceName)
-}
-getNCR();
-
-L.marker([50.5, 30.5]).addTo(map);
 
 
-// L.JSON(chargepointJson).addTo(map)
+
+
+var fullBatteryCharge = 75
+var evCarRange = 108
+
+//	Calculate the Range per kWh using the formula
+var rangePerBP = evCarRange/fullBatteryCharge
+console.log(rangePerBP + ' kwh')
+
+//	collect the EV state of charge and convert to percentage
+var SOC = 26
+var SOC = SOC/100
+console.log(SOC + ' %')
+
+//Subtract 10% battery power from the CBP for allowance.
+var SOC = SOC-0.1
+console.log(SOC + ' %')
+
+//Using the SOC minus 10%, calculate the safe Drivable Range of the EV (DR)
+var safeDrivableDistance = evCarRange*SOC
+console.log(safeDrivableDistance +' miles')
+
+
+
+
+
+
+chargestations();
+
+        function chargestations(){
+            var distance = 0.5
+            var longitude = -2.138283
+            var latitude = 57.1189654
+            axios.get('https://chargepoints.dft.gov.uk/api/retrieve/registry/format/json', {
+                params:{
+                    lat: latitude,
+                    long: longitude,
+                    dist: safeDrivableDistance
+                }
+
+            } )
+            .then(function(response){
+                console.log(response)
+                console.log(safeDrivableDistance)
+                // formating to get stuffs
+                var Chargerlat = response.data.ChargeDevice[2].ChargeDeviceLocation.Latitude
+                var ChargerLong = response.data.ChargeDevice[2].ChargeDeviceLocation.Longitude
+
+                L.marker([Chargerlat, ChargerLong]).addTo(map);
+                // var ChargerlatOutput = `
+                
+                // `;
+            })
+            .catch(function(){
+                console.log(error)
+            })
+        }
