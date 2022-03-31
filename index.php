@@ -75,7 +75,4 @@
 <script src="./sidenav.js"></script>
 <script src="signup.js"></script>
 <!-- <script>
-
-
-
 </script> -->
