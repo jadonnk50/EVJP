@@ -1,3 +1,14 @@
+var map = L.map('map').setView([57.11973723727868, -2.13965135269459], 17);
+
+L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 18,
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'pk.eyJ1IjoiamFkb25uazUwIiwiYSI6ImNsMHgzb3IzcTFnaGIzZG41OHJpbWNhd3YifQ.iRmUKqleOXpk27nXvL-zkA'
+}).addTo(map);
+
 var jstart;
 var jfinish;  
 var SOC; 
@@ -44,40 +55,11 @@ function JourneyForm(event){
     //Using the SOC minus 10%, calculate the safe Drivable Range of the EV (DR)
     safeDrivableDistance = EVrange*SOC
     console.log(safeDrivableDistance +' miles')
-
-    //locate the charging station by calling the chargestation function.
-    chargestations(distance, geometry);
-}
-
-function chargestations(distance, longitude, latitude){
-
+ 
   var location = jstart;
   geocode(location);
+}
 
-  var distance = safeDrivableDistance;
-  var geometry = (long);
-  setTimeout(console.log(geometry), 5000);
-  
-            axios.get('https://chargepoints.dft.gov.uk/api/retrieve/registry/format/json', {
-                params:{
-                    lat: latitude,
-                    long: longitude,
-                    dist: distance
-                }
-
-            } )
-            .then(function(response){
-                console.log(response)
-                // formating to get stuffs
-                var Chargerlat = response.data.ChargeDevice[2].ChargeDeviceLocation.Latitude
-                var ChargerLong = response.data.ChargeDevice[2].ChargeDeviceLocation.Longitude
-
-                L.marker([Chargerlat, ChargerLong]).addTo(map);
-            })
-            .catch(function(){
-                console.log(error)
-            })
-        }
     
         //start the geocoding function.
 function geocode(location){
@@ -98,9 +80,35 @@ function geocode(location){
           console.log(lat);
           console.log(long);
 
-          return [lat, long];
+          var geometry = (long);
+          console.log(geometry)  
+          //locate the charging station by calling the chargestation function.
+          chargestations();
+
         })
         .catch(function(error){
           console.log(error);
         });
       }
+
+  function chargestations(){
+        axios.get('https://chargepoints.dft.gov.uk/api/retrieve/registry/format/json', {
+            params:{
+                lat: lat,
+                long: long,
+                dist: safeDrivableDistance
+            }
+
+        } )
+        .then(function(response){
+            console.log(response)
+            // formating to get stuffs
+            var Chargerlat = response.data.ChargeDevice[2].ChargeDeviceLocation.Latitude
+            var ChargerLong = response.data.ChargeDevice[2].ChargeDeviceLocation.Longitude
+
+            L.marker([Chargerlat, ChargerLong]).addTo(map);
+        })
+        .catch(function(){
+            console.log(error)
+        })
+    }
