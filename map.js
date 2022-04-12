@@ -9,14 +9,34 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     accessToken: 'pk.eyJ1IjoiamFkb25uazUwIiwiYSI6ImNsMHgzb3IzcTFnaGIzZG41OHJpbWNhd3YifQ.iRmUKqleOXpk27nXvL-zkA'
 }).addTo(map);
 
+var LeafIcon = L.Icon.extend({
+  options: {
+     iconSize:     [38, 40],
+     shadowSize:   [50, 64],
+     iconAnchor:   [22, 94],
+     shadowAnchor: [4, 62],
+     popupAnchor:  [-3, -76]
+  }
+});
+
+var greenIcon = new LeafIcon({
+  iconUrl: 'Assets/evcharger2.png',
+})
+
+var redIcon = new LeafIcon({
+  iconUrl: 'Assets/evcharger.png',
+})
+
 var jstart;
 var jfinish;  
 var SOC; 
 var EVrange;
 var charger;
 var safeDrivableDistance;
-var lat;
-var long;
+var StartLat;
+var StartLong;
+var EndLat;
+var EndLong;
 
   // get Journey planner Form
   const journeyForm = document.getElementById('journey');
@@ -28,7 +48,7 @@ var long;
 //getting the form data
 function JourneyForm(event){
     event.preventDefault();
-    console.log('form submited');
+    console.log('form submitted');
     
 
     //getting the form data
@@ -56,13 +76,16 @@ function JourneyForm(event){
     safeDrivableDistance = EVrange*SOC
     console.log(safeDrivableDistance +' miles')
  
-  var location = jstart;
-  geocode(location);
+    //locate start point and run the chargestation function
+  StartPoint(jstart);
+  
+  //Locate destination.
+  EndPoint(jfinish);
 }
 
     
         //start the geocoding function.
-function geocode(location){
+function StartPoint(location){
         axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
           params:{
             address:location,
@@ -74,14 +97,13 @@ function geocode(location){
           console.log(response);
   
           // get the Geometry
-          lat = response.data.results[0].geometry.location.lat;
-          long = response.data.results[0].geometry.location.lng;
+          StartLat = response.data.results[0].geometry.location.lat;
+          StartLong = response.data.results[0].geometry.location.lng;
           
-          console.log(lat);
-          console.log(long);
-
-          var geometry = (long);
-          console.log(geometry)  
+          console.log(StartLat);
+          console.log(StartLong);
+          L.marker([StartLat, StartLong]).addTo(map);
+ 
           //locate the charging station by calling the chargestation function.
           chargestations();
 
@@ -90,25 +112,98 @@ function geocode(location){
           console.log(error);
         });
       }
+  
+
+
+
+
+
+      function EndPoint(location){
+        axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+          params:{
+            address:location,
+            key:'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys'
+          }
+        })
+        .then(function(response){
+          // Log full response
+          console.log(response);
+  
+          // get the Geometry
+          EndLat = response.data.results[0].geometry.location.lat;
+          EndLong = response.data.results[0].geometry.location.lng;
+          L.marker([EndLat, EndLong], {icon: redIcon}).addTo(map);
+
+          
+
+        })
+        .catch(function(error){
+          console.log(error);
+        });
+      }
+
+
+
+
+
 
   function chargestations(){
         axios.get('https://chargepoints.dft.gov.uk/api/retrieve/registry/format/json', {
             params:{
-                lat: lat,
-                long: long,
+                lat: StartLat,
+                long: StartLong,
                 dist: safeDrivableDistance
             }
 
         } )
         .then(function(response){
             console.log(response)
-            // formating to get stuffs
-            var Chargerlat = response.data.ChargeDevice[2].ChargeDeviceLocation.Latitude
-            var ChargerLong = response.data.ChargeDevice[2].ChargeDeviceLocation.Longitude
+            // formatting to get stuffs
 
-            L.marker([Chargerlat, ChargerLong]).addTo(map);
+            
+            // var Chargerlat = response.data.ChargeDevice[0].ChargeDeviceLocation.Latitude;
+            // var ChargerLong = response.data.ChargeDevice[0].ChargeDeviceLocation.Longitude;
+
+            // L.marker([Chargerlat, ChargerLong], {icon: greenIcon}).addTo(map);
+
+            for(i in response.data.ChargeDevice){
+              var Chargerlat = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
+              var ChargerLong = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
+              L.marker([Chargerlat, ChargerLong], {icon: greenIcon}).addTo(map);
+            }
+            matrixCal()
         })
         .catch(function(){
             console.log(error)
         })
     }
+
+  Number.prototype.toRad = function() {
+      return this * Math.PI / 180;
+   }
+   
+   function matrixCal(){
+      var lat2 = EndLat; 
+      var lon2 = EndLong; 
+      var lat1 = Chargerlat; 
+      var lon1 = ChargerLong; 
+   
+      var R = 6371; // km 
+        //has a problem with the .toRad() method below.
+      var x1 = lat2-lat1;
+      var dLat = x1.toRad();  
+      var x2 = lon2-lon1;
+      var dLon = x2.toRad();  
+      var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+                   Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
+                   Math.sin(dLon/2) * Math.sin(dLon/2);  
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+      var d = R * c; 
+   
+      console.log(d);
+}
+
+
+    
+
+  
