@@ -12,9 +12,6 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 var LeafIcon = L.Icon.extend({
   options: {
      iconSize:     [38, 40],
-     shadowSize:   [50, 64],
-     iconAnchor:   [22, 94],
-     shadowAnchor: [4, 62],
      popupAnchor:  [-3, -76]
   }
 });
@@ -84,7 +81,7 @@ function JourneyForm(event){
 }
 
     
-        //start the geocoding function.
+        //Geocode the start point and locate it on the map
 function StartPoint(location){
         axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
           params:{
@@ -104,9 +101,8 @@ function StartPoint(location){
           console.log(StartLong);
           L.marker([StartLat, StartLong]).addTo(map);
  
-          //locate the charging station by calling the chargestation function.
+          //locate the charging stations by calling the chargestation function.
           chargestations();
-
         })
         .catch(function(error){
           console.log(error);
@@ -114,10 +110,7 @@ function StartPoint(location){
       }
   
 
-
-
-
-
+      //Geocode the end point and locate it on the map
       function EndPoint(location){
         axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
           params:{
@@ -133,9 +126,6 @@ function StartPoint(location){
           EndLat = response.data.results[0].geometry.location.lat;
           EndLong = response.data.results[0].geometry.location.lng;
           L.marker([EndLat, EndLong], {icon: redIcon}).addTo(map);
-
-          
-
         })
         .catch(function(error){
           console.log(error);
@@ -146,7 +136,7 @@ function StartPoint(location){
 
 
 
-
+      //ChargeStations function that will calculate the closest chargestation to the destination and locate it on the map
   function chargestations(){
         axios.get('https://chargepoints.dft.gov.uk/api/retrieve/registry/format/json', {
             params:{
@@ -160,50 +150,61 @@ function StartPoint(location){
             console.log(response)
             // formatting to get stuffs
 
-            
-            // var Chargerlat = response.data.ChargeDevice[0].ChargeDeviceLocation.Latitude;
-            // var ChargerLong = response.data.ChargeDevice[0].ChargeDeviceLocation.Longitude;
+            // for(i in response.data.ChargeDevice){
+            //   var Chargerlat = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
+            //   var ChargerLong = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
+            //   L.marker([Chargerlat, ChargerLong], {icon: greenIcon}).addTo(map);
+            // }
 
-            // L.marker([Chargerlat, ChargerLong], {icon: greenIcon}).addTo(map);
+            var distance = [];
 
             for(i in response.data.ChargeDevice){
-              var Chargerlat = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
-              var ChargerLong = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
-              L.marker([Chargerlat, ChargerLong], {icon: greenIcon}).addTo(map);
+              const toRad = (number) => number * (Math.PI/180)
+              
+              var lat2 = EndLat; 
+              var lon2 = EndLong; 
+              var lat1 = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
+              var lon1 = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
+              var ChargeDeviceName = response.data.ChargeDevice[i].ChargeDeviceName;
+              var ChargeDeviceStatus = response.data.ChargeDevice[i].ChargeDeviceStatus;
+              var numberOfConnectors =response.data.ChargeDevice[i].Connector.length;
+              var ConnectorRatedOutputkW = [];
+                for (var i = 0; i < numberOfConnectors; i++){
+                  var ConnectorRatedOutputkW = response.data.ChargeDevice[i].Connector[i].RatedOutputkW;
+                  console.log(myStringArray[i]);
+                    //Do something
+                }};
+
+              var R = 3958.8; // miles 
+              var x1 = lat2-lat1;
+              var dLat = toRad(x1);  
+              var x2 = lon2-lon1;
+              var dLon = toRad(x2);  
+              var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);  
+              var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+              var d = R * c;
+              
+              distance.push( { lat: lat1, long: lon1, miles: d, chargeDeviceName: ChargeDeviceName, ChargeDeviceStatus: ChargeDeviceStatus, ConnectorRatedOutputkW: ConnectorRatedOutputkW, AvailableConnectors: numberOfConnectors})
             }
-            matrixCal()
+            console.log(distance);
+
+            let min = Math.min(...distance.map(item => item.miles))
+            let getMinimum = distance.filter(item => item.miles === min)[0]
+            console.log(getMinimum);
+
+            L.marker([getMinimum.lat, getMinimum.long], {icon: greenIcon}).addTo(map)            
         })
-        .catch(function(){
+        .catch(function(error){
             console.log(error)
         })
     }
 
-  Number.prototype.toRad = function() {
-      return this * Math.PI / 180;
-   }
-   
-   function matrixCal(){
-      var lat2 = EndLat; 
-      var lon2 = EndLong; 
-      var lat1 = Chargerlat; 
-      var lon1 = ChargerLong; 
-   
-      var R = 6371; // km 
-        //has a problem with the .toRad() method below.
-      var x1 = lat2-lat1;
-      var dLat = x1.toRad();  
-      var x2 = lon2-lon1;
-      var dLon = x2.toRad();  
-      var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
-                   Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
-                   Math.sin(dLon/2) * Math.sin(dLon/2);  
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-      var d = R * c; 
-   
-      console.log(d);
-}
-
-
-    
+    //Calculate the preferred time to be spent on each charging station and how it affects the next distance.
+    function chargeDuration(){
+      var chargerSpeed;
+      var chargingDuration;
+    }
 
   
