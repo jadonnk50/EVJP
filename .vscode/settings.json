@@ -4,11 +4,15 @@
         "chargestation",
         "chargestations",
         "evcharger",
+        "Geocode",
+        "Hgzb",
+        "Iiwi",
         "jfinish",
         "journeyfinish",
         "journeystart",
         "Mapbox",
         "Outputk",
-        "Vrange"
+        "Vrange",
+        "Yrydo"
     ]
 }
