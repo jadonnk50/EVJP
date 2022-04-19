@@ -35,26 +35,33 @@
     <div id="mySidenav" class="sidenav">
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>  
       
-      <div class="journeydetails">
-        <form id='journey' >
-          <input type="text" id="journeystart" name="start" placeholder="The starting point of your trip" required>
-          <input type="text" id="journeyfinish" name="finish" placeholder="Destination" required>
-          <input type="text" id="evSOC" name="SOC" placeholder="Departure Charge %" required>
-          <input type="text" id="EVrange" name="EVrange" placeholder="Vehicle Range (in Miles)" required>
-          <input type="text" id="evBatterySize" name="EVBatterySize" placeholder="Your EV Battery Size (in kWh)" required>
-          <input type="text" id="chargeDUration" name="chargeDUration" placeholder="Preferred Charge Duration (in Minutes)" required>      
-          <select id="charger" name="Charger Type" >
-          <option value="50">Fastest Charger Available</option>  
-          <option value="45">Rapid Charge (45kWh)</option>
-            <option value="22">Rapid Charge (22kWh)</option>
-            <option value="7">Fast Charge (7kWh)</option>
-            <option value="2.3">Slow Charge (2.3kWh)</option>
-          </select>
+      <section id="form">
+        <div class="journeydetails">
+          <form id='journey' >
+             <input type="text" id="journeystart" name="start" placeholder="The starting point of your trip" required>
+             <input type="text" id="journeyfinish" name="finish" placeholder="Destination" required>
+             <input type="text" id="evSOC" name="SOC" placeholder="Departure Charge %" required>
+             <input type="text" id="EVrange" name="EVrange" placeholder="Vehicle Range (in Miles)" required>
+             <input type="text" id="evBatterySize" name="EVBatterySize" placeholder="Your EV Battery Size (in kWh)" required>
+             <input type="text" id="chargeDUration" name="chargeDUration" placeholder="Preferred Charge Duration (in Minutes)" required>      
+            
+             <select id="charger" name="Charger Type" >
+                <option value="50">Fastest Charger Available</option>  
+                <option value="45">Rapid Charge (45kWh)</option>
+                <option value="22">Rapid Charge (22kWh)</option>
+                <option value="7">Fast Charge (7kWh)</option>
+                <option value="2.3">Slow Charge (2.3kWh)</option>
+              </select>
 
-          <input type="submit" value="Start Plan">
-          <input type="submit" value="Refresh" onClick="refresh(this)">
-        </form>
-      </div>
+              <input type="submit" value="Start Plan">
+              <input type="submit" value="Refresh" onClick="refresh(this)">
+          </form>
+        </div>
+      </section>
+
+      <section id="itinerary-div">
+        <h2>Journey Details<h2>  
+      </section>
 
     </div>
 

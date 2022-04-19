@@ -298,6 +298,18 @@ async function chargestations() {
     </ul>
     `);
 
+  var nextStop = `
+    <ul>
+      <li>${ChargeDeviceName}</li>
+      <li>Status: ${ChargeDeviceStatus}</li>
+      <li>${numberOfConnectors} Connectors</li>
+      <li>Avail KWh: ${ConnectorRatedOutputkW}</li>
+    </ul>
+    `;
+
+  
+    // itinerary()
+
     chargeDuration();
     console.log(chargeSt);
   } catch (error) {
@@ -322,4 +334,38 @@ function chargeDuration() {
   StartLong = chargeLong;
   safeDrivableDistance = percentageReplenished * EVrange;
   chargestations()
+}
+
+
+function itinerary(){
+  const itineraryDiv = document.getElementById("itinerary-div");
+  const newDiv = document.createElement("div");
+  const newList = document.createElement("ul")
+  console.log("add");
+  itineraryDiv.appendChild(newDiv);
+  newDiv.id = "itineraryId";
+  itineraryId.appendChild(newList);
+}
+
+function distanceCal (){
+  var lat2 = EndLat;
+  var lon2 = EndLong;
+  var lat1 = StartLat;
+  var lon1 = StartLong;
+ 
+  var R = 3958.8; // miles
+  var x1 = lat2 - lat1;
+  var dLat = toRad(x1);
+  var x2 = lon2 - lon1;
+  var dLon = toRad(x2);
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+
+  console.log(d);
 }
