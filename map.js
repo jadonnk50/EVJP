@@ -188,9 +188,23 @@ async function newMapLayer(){
     }
   );
 
+  //call the matrix api to calculate the journey distance: between the start point and end point
+ let journeyDistance =  await matrixAPIcall(jstart, jfinish);
 
-    chargestations()
+ if (journeyDistance <= safeDrivableDistance){
+ console.log("battery will be enough for this journey")
+ // run the routing function
+ } else if (journeyDistance > safeDrivableDistance)
+  {
+   while (journeyDistance > safeDrivableDistance)
+   {
+    let chargePoint = await chargestations();
 
+    journeyDistance = await matrixAPIcall(chargePoint, jfinish);
+
+   }
+  
+ }
   } catch (error) {
   throw error.message;
   }
@@ -234,7 +248,7 @@ async function chargestations() {
       }
     );
 
-    var distance = [];
+    let distance = [];
 
     for (i in response.data.ChargeDevice) {
       const toRad = (number) => number * (Math.PI / 180);
@@ -286,6 +300,12 @@ async function chargestations() {
 
     chargeLat = getMinimum.lat;
     chargeLong = getMinimum.long;
+    let chargePoint = [chargeLat,chargeLong];
+
+    chargePoint = chargePoint.toString();
+
+    console.log(chargePoint);
+
     L.marker([chargeLat, chargeLong], {
       icon: greenIcon
     }).addTo(map)
@@ -297,21 +317,10 @@ async function chargestations() {
       <li>Avail KWh: ${ConnectorRatedOutputkW}</li>
     </ul>
     `);
-
-  var nextStop = `
-    <ul>
-      <li>${ChargeDeviceName}</li>
-      <li>Status: ${ChargeDeviceStatus}</li>
-      <li>${numberOfConnectors} Connectors</li>
-      <li>Avail KWh: ${ConnectorRatedOutputkW}</li>
-    </ul>
-    `;
-
-  
-    // itinerary()
-
     chargeDuration();
-    console.log(chargeSt);
+  
+    return chargePoint;
+    
   } catch (error) {
     throw error.message;
   }
@@ -333,7 +342,6 @@ function chargeDuration() {
   StartLat = chargeLat;
   StartLong = chargeLong;
   safeDrivableDistance = percentageReplenished * EVrange;
-  chargestations()
 }
 
 
@@ -347,25 +355,55 @@ function itinerary(){
   itineraryId.appendChild(newList);
 }
 
-function distanceCal (){
-  var lat2 = EndLat;
-  var lon2 = EndLong;
-  var lat1 = StartLat;
-  var lon1 = StartLong;
+// function distanceCal (){
+//   const toRad = (number) => number * (Math.PI / 180);
+  
+//   var lat2 = EndLat;
+//   var lon2 = EndLong;
+//   var lat1 = StartLat;
+//   var lon1 = StartLong;
  
-  var R = 3958.8; // miles
-  var x1 = lat2 - lat1;
-  var dLat = toRad(x1);
-  var x2 = lon2 - lon1;
-  var dLon = toRad(x2);
-  var a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  var d = R * c;
+//   var R = 3958.8; // miles
+//   var x1 = lat2 - lat1;
+//   var dLat = toRad(x1);
+//   var x2 = lon2 - lon1;
+//   var dLon = toRad(x2);
+//   var a =
+//     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+//     Math.cos(toRad(lat1)) *
+//       Math.cos(toRad(lat2)) *
+//       Math.sin(dLon / 2) *
+//       Math.sin(dLon / 2);
+//   var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//   var d = R * c;
 
-  console.log(d);
+//   console.log(d);
+// }
+
+
+async function matrixAPIcall(origins, destinations){
+  try {
+    const response = await axios.get(
+      'https://maps.googleapis.com/maps/api/distancematrix/json', 
+      {
+        params: {
+          origins: origins,
+          destinations: destinations,
+          mode: 'DRIVING',
+          units: "imperial",
+          key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
+        },
+      }
+    );
+    console.log(response);
+
+    let distDifference = parseFloat(response.data.rows[0].elements[0].distance.text.split(" ")[0]);
+    let duration = response.data.rows[0].elements[0].duration.text;
+    
+
+    return distDifference
+
+  } catch (error) {
+    throw error.message;
+  }
 }
