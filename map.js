@@ -171,7 +171,7 @@ async function newMapLayer(){
   try{
     map.remove();
 
-    map = L.map('map').setView([51.6290111894702, -0.4312149794847094], 17);
+    map = L.map('map').setView([57.11973723727868, -2.13965135269459], 17);
     mapTiler.addTo(map);
   
   var startPointGeo= await StartPoint(jstart);
@@ -288,6 +288,9 @@ async function chargestations() {
     var actualChargeStation = await getMinimumCS(getMinimum.csID);
     var chargeSt = actualChargeStation.ChargeDevice[0];
     var ChargeDeviceName = chargeSt.ChargeDeviceName;
+    var ChargeDeviceStreet = chargeSt.ChargeDeviceLocation.Address.Street;
+    var ChargeDevicePostCode = chargeSt.ChargeDeviceLocation.Address.PostCode;
+    var ChargeDevicePostTown = chargeSt.ChargeDeviceLocation.Address.PostTown;
     var ChargeDeviceStatus = chargeSt.ChargeDeviceStatus;
     var numberOfConnectors = chargeSt.Connector.length;
     var ConnectorRatedOutputkW = [];
@@ -310,12 +313,14 @@ async function chargestations() {
       icon: greenIcon
     }).addTo(map)
     .bindPopup(`
-    <ul>
-      <li>${ChargeDeviceName}</li>
-      <li>Status: ${ChargeDeviceStatus}</li>
-      <li>${numberOfConnectors} Connectors</li>
-      <li>Avail KWh: ${ConnectorRatedOutputkW}</li>
-    </ul>
+    <div>
+      <div><strong>${ChargeDeviceName}</strong></div>
+      <div>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</div>
+      <div>${ChargeDevicePostTown}</div>
+      <div>Status: ${ChargeDeviceStatus}</div>
+      <div>${numberOfConnectors} Connectors</div>
+      <div>Avail KWh: ${ConnectorRatedOutputkW}</div>
+    </div>
     `);
     chargeDuration();
   

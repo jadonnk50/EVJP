@@ -46,8 +46,7 @@
              <input type="text" id="chargeDUration" name="chargeDUration" placeholder="Preferred Charge Duration (in Minutes)" required>      
             
              <select id="charger" name="Charger Type" >
-                <option value="50">Fastest Charger Available</option>  
-                <option value="45">Rapid Charge (45kWh)</option>
+                <option value="50">Fastest Charger Available</option>
                 <option value="22">Rapid Charge (22kWh)</option>
                 <option value="7">Fast Charge (7kWh)</option>
                 <option value="2.3">Slow Charge (2.3kWh)</option>
