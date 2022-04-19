@@ -17,12 +17,12 @@ L.tileLayer(
 var LeafIcon = L.Icon.extend({
   options: {
     iconSize: [38, 40],
-    popupAnchor: [-3, -76],
   },
 });
 
 var greenIcon = new LeafIcon({
   iconUrl: 'Assets/evcharger2.png',
+  popupAnchor: [-1, 3],
 });
 
 var redIcon = new LeafIcon({
@@ -48,6 +48,11 @@ var chargingDuration;
 var evBatterySize
 var chargeLat;
 var chargeLong;
+
+var startPointGeo = L.latLng(StartLat, StartLong),
+endPointGeo = L.latLng(EndLat, EndLong),
+bounds = L.latLngBounds(corner1, corner2);
+
 
 // get Journey planner Form
 const journeyForm = document.getElementById('journey');
@@ -106,12 +111,19 @@ function StartPoint(location) {
       // get the Geometry
       StartLat = response.data.results[0].geometry.location.lat;
       StartLong = response.data.results[0].geometry.location.lng;
+      var FormattedAd = response.data.results[0].formatted_address;
+      startPointGeo = (StartLat, StartLong);
 
-      console.log(StartLat);
+      console.log(FormattedAd);
       console.log(StartLong);
-      L.marker([StartLat, StartLong]).addTo(map);
+      L.marker([StartLat, StartLong],
+        {
+        draggable: true,
+        title: "Start Point",
+      }).addTo(map)
+      .bindPopup(FormattedAd);
 
-      //locate the charging stations by calling the chargestation function.
+      //locate the charging stations by calling the chargestation function
       chargestations();
     })
     .catch(function (error) {
@@ -120,27 +132,43 @@ function StartPoint(location) {
 }
 
 //Geocode the end point and locate it on the map
-function EndPoint(location) {
-  axios
-    .get('https://maps.googleapis.com/maps/api/geocode/json', {
-      params: {
+async function EndPoint(location) {
+  try {
+    const response = await axios.get(
+      'https://maps.googleapis.com/maps/api/geocode/json', 
+      {
+        params: {
         address: location,
         key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
-      },
-    })
-    .then(function (response) {
-      // Log full response
-      console.log(response);
+        },
+      }
+    );
+    console.log(response);
 
       // get the Geometry
-      EndLat = response.data.results[0].geometry.location.lat;
-      EndLong = response.data.results[0].geometry.location.lng;
-      L.marker([EndLat, EndLong], { icon: redIcon }).addTo(map);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+    let EndLat = response.data.results[0].geometry.location.lat;
+    let EndLong = response.data.results[0].geometry.location.lng;
+    var FormattedAd = response.data.results[0].formatted_address;
+    startPointGeo = (EndLat, EndLong);
+
+    L.marker([startPointGeo], {
+        icon: redIcon,
+        draggable: true,
+        title: "End Point",
+      }).addTo(map)
+      .bindPopup(FormattedAd);
+
+    return startPointGeo;
+  } catch (error) {
+    throw error.message;
+  }
 }
+
+
+//add map layer
+
+
+
 
 // Function to get charge station by its ID
 async function getMinimumCS(chargeStationId) {
@@ -160,6 +188,7 @@ async function getMinimumCS(chargeStationId) {
   }
 }
 
+
 //ChargeStations function that will calculate the closest chargestation to the destination and locate it on the map
 async function chargestations() {
   try {
@@ -170,16 +199,11 @@ async function chargestations() {
           lat: StartLat,
           long: StartLong,
           dist: safeDrivableDistance,
+          'rated-output-kw':charger,
         },
       }
     );
-    // formatting to get stuffs
-
-    // for(i in response.data.ChargeDevice){
-    //   var Chargerlat = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
-    //   var ChargerLong = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
-    //   L.marker([Chargerlat, ChargerLong], {icon: greenIcon}).addTo(map);
-    // }
+  
 
     var distance = [];
 
@@ -190,17 +214,7 @@ async function chargestations() {
       var lon2 = EndLong;
       var lat1 = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
       var lon1 = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
-      // var ChargeDeviceName = response.data.ChargeDevice[i].ChargeDeviceName;
-      // var ChargeDeviceStatus = response.data.ChargeDevice[i].ChargeDeviceStatus;
-      // var numberOfConnectors = response.data.ChargeDevice[i].Connector.length;
-      // var ConnectorRatedOutputkW = [];
-      // for (var i = 0; i < numberOfConnectors; i++) {
-      //   var ConnectorRatedOutputkW =
-      //     response.data.ChargeDevice[i].Connector[i].RatedOutputkW;
-      //   console.log(myStringArray[i]);
-      //   //Do something
-      // }
-
+      
       var R = 3958.8; // miles
       var x1 = lat2 - lat1;
       var dLat = toRad(x1);
@@ -220,10 +234,6 @@ async function chargestations() {
         long: lon1,
         miles: d,
         csID: response.data.ChargeDevice[i].ChargeDeviceId,
-        // chargeDeviceName: ChargeDeviceName,
-        // ChargeDeviceStatus: ChargeDeviceStatus,
-        // ConnectorRatedOutputkW: ConnectorRatedOutputkW,
-        // AvailableConnectors: numberOfConnectors,
       });
     }
 
@@ -234,9 +244,33 @@ async function chargestations() {
 
     var actualChargeStation = await getMinimumCS(getMinimum.csID);
     var chargeSt = actualChargeStation.ChargeDevice[0];
-    console.log(chargeSt);
+    var ChargeDeviceName = chargeSt.ChargeDeviceName;
+    var ChargeDeviceStatus = chargeSt.ChargeDeviceStatus;
+    var numberOfConnectors = chargeSt.Connector.length;
+    var ConnectorRatedOutputkW = [];
+      for (var i = 0; i < numberOfConnectors; i++) {
+        ConnectorRatedOutputkW.push(chargeSt.Connector[i].RatedOutputkW)
+      }
+    chargerSpeed = Math.max(...ConnectorRatedOutputkW)
+    console.log(ConnectorRatedOutputkW)
+    console.log(chargerSpeed)
 
-    L.marker([getMinimum.lat, getMinimum.long], { icon: greenIcon }).addTo(map);
+    chargeLat = getMinimum.lat;
+    chargeLong = getMinimum.long;
+    L.marker([chargeLat, chargeLong], {
+      icon: greenIcon
+    }).addTo(map)
+    .bindPopup(`
+    <ul>
+      <li>${ChargeDeviceName}</li>
+      <li>Status: ${ChargeDeviceStatus}</li>
+      <li>${numberOfConnectors} Connectors</li>
+      <li>Avail KWh: ${ConnectorRatedOutputkW}</li>
+    </ul>
+    `);
+
+    chargeDuration();
+    console.log(chargeSt);
   } catch (error) {
     throw error.message;
   }
@@ -244,6 +278,19 @@ async function chargestations() {
 
 //Calculate the preferred time to be spent on each charging station and how it affects the next distance.
 function chargeDuration() {
-  var chargerSpeed;
-  var chargingDuration;
+  chargerSpeed; //from the CS charging RatedOutput in KWh (Kilowatts per Hour)
+      
+  //the replenish Charge will
+  var batteryReplenished = chargerSpeed * chargingDuration;
+  console.log(chargingDuration + "hours");
+  console.log(batteryReplenished + "kWh");
+
+      //percentage replenished is: 
+  var percentageReplenished =batteryReplenished/evBatterySize;
+  console.log(percentageReplenished * 100 + '% is percentage charged')
+
+  StartLat = chargeLat;
+  StartLong = chargeLong;
+  safeDrivableDistance = percentageReplenished * EVrange;
+  chargestations()
 }

@@ -1,6 +1,6 @@
 var map = L.map('map').setView([57.11973723727868, -2.13965135269459], 17);
 
-L.tileLayer(
+mapTiler = L.tileLayer(
   'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
   {
     attribution:
@@ -12,17 +12,19 @@ L.tileLayer(
     accessToken:
       'pk.eyJ1IjoiamFkb25uazUwIiwiYSI6ImNsMHgzb3IzcTFnaGIzZG41OHJpbWNhd3YifQ.iRmUKqleOXpk27nXvL-zkA',
   }
-).addTo(map);
+)
+
+mapTiler.addTo(map);
 
 var LeafIcon = L.Icon.extend({
   options: {
     iconSize: [38, 40],
-    popupAnchor: [-3, -76],
   },
 });
 
 var greenIcon = new LeafIcon({
   iconUrl: 'Assets/evcharger2.png',
+  popupAnchor: [-1, 3],
 });
 
 var redIcon = new LeafIcon({
@@ -49,6 +51,7 @@ var evBatterySize
 var chargeLat;
 var chargeLong;
 
+
 // get Journey planner Form
 const journeyForm = document.getElementById('journey');
 
@@ -70,6 +73,8 @@ function JourneyForm(event) {
     chargingDuration  = document.getElementById("chargeDUration").value;
     console.log(jstart + ' is start, '+ jfinish + ' is finish, ' + SOC + '% is departure charge, ' + EVrange + ' miles is EVrange, ' + evBatterySize  + " is EV battery size " + chargingDuration + ' is Charge Duration, '+ charger + " is Chosen Charger ")
 
+    document.getElementById('journey').reset();
+
    //manipulation of form data.
     SOC = SOC/100;
     //Subtract 10% battery power from the CBP for allowance.
@@ -80,67 +85,120 @@ function JourneyForm(event) {
     console.log(safeDrivableDistance +' miles is the safe Drivable Range')
 
     //preferred duration divided by 60 to get the time in hours.
-    chargingDuration = chargingDuration/60; 
+    chargingDuration = chargingDuration/60;
 
- 
-    //locate start point and run the chargestation function
-  StartPoint(jstart);
-  
-  //Locate destination.
-  EndPoint(jfinish);
+
+    newMapLayer();
 }
 
 //Geocode the start point and locate it on the map
-function StartPoint(location) {
-  axios
-    .get('https://maps.googleapis.com/maps/api/geocode/json', {
+async function StartPoint(location) {
+  try {
+    const response = await axios.get(
+      'https://maps.googleapis.com/maps/api/geocode/json', 
+      {
       params: {
         address: location,
         key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
       },
-    })
-    .then(function (response) {
-      // Log full response
+    }
+    );
+    // Log full response
       console.log(response);
 
       // get the Geometry
       StartLat = response.data.results[0].geometry.location.lat;
       StartLong = response.data.results[0].geometry.location.lng;
+      var FormattedAd = response.data.results[0].formatted_address;
+      startPointGeo = [StartLat, StartLong];
 
-      console.log(StartLat);
+      console.log(FormattedAd);
       console.log(StartLong);
-      L.marker([StartLat, StartLong]).addTo(map);
+      L.marker([StartLat, StartLong],
+        {
+        draggable: true,
+        title: "Start Point",
+      }).addTo(map)
+      .bindPopup(FormattedAd);
 
-      //locate the charging stations by calling the chargestation function.
-      chargestations();
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+    
+      return startPointGeo;
+    }catch (error) {
+    throw error.message;
+  }
 }
+
 
 //Geocode the end point and locate it on the map
-function EndPoint(location) {
-  axios
-    .get('https://maps.googleapis.com/maps/api/geocode/json', {
-      params: {
+async function EndPoint(location) {
+  try {
+    const response = await axios.get(
+      'https://maps.googleapis.com/maps/api/geocode/json', 
+      {
+        params: {
         address: location,
         key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
-      },
-    })
-    .then(function (response) {
-      // Log full response
-      console.log(response);
+        },
+      }
+    );
+    console.log(response);
 
       // get the Geometry
-      EndLat = response.data.results[0].geometry.location.lat;
-      EndLong = response.data.results[0].geometry.location.lng;
-      L.marker([EndLat, EndLong], { icon: redIcon }).addTo(map);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
+    EndLat = response.data.results[0].geometry.location.lat;
+    EndLong = response.data.results[0].geometry.location.lng;
+    var FormattedAd = response.data.results[0].formatted_address;
+    endPointGeo = [EndLat, EndLong]
+
+    L.marker([EndLat, EndLong], {
+        icon: redIcon,
+        draggable: true,
+        title: "End Point",
+      }).addTo(map)
+      .bindPopup(FormattedAd);
+
+      return endPointGeo
+
+  } catch (error) {
+    throw error.message;
+  }
 }
+
+
+
+//add new map layer
+
+async function newMapLayer(){
+  try{
+    map.remove();
+
+    map = L.map('map').setView([51.6290111894702, -0.4312149794847094], 17);
+    mapTiler.addTo(map);
+  
+  var startPointGeo= await StartPoint(jstart);
+  var endPointGeo = await EndPoint(jfinish);
+
+    startPointGeo = L.latLng(startPointGeo);
+    endPointGeo = L.latLng(endPointGeo);
+    bounds = L.latLngBounds(startPointGeo, endPointGeo);
+
+ map.fitBounds(
+    bounds, 
+    { 
+      padding: [50, 50] 
+    }
+  );
+
+
+    chargestations()
+
+  } catch (error) {
+  throw error.message;
+  }
+}
+
+
+
+
 
 // Function to get charge station by its ID
 async function getMinimumCS(chargeStationId) {
@@ -160,6 +218,7 @@ async function getMinimumCS(chargeStationId) {
   }
 }
 
+
 //ChargeStations function that will calculate the closest chargestation to the destination and locate it on the map
 async function chargestations() {
   try {
@@ -174,7 +233,6 @@ async function chargestations() {
         },
       }
     );
-  
 
     var distance = [];
 
@@ -185,7 +243,7 @@ async function chargestations() {
       var lon2 = EndLong;
       var lat1 = response.data.ChargeDevice[i].ChargeDeviceLocation.Latitude;
       var lon1 = response.data.ChargeDevice[i].ChargeDeviceLocation.Longitude;
-      
+     
       var R = 3958.8; // miles
       var x1 = lat2 - lat1;
       var dLat = toRad(x1);
@@ -228,8 +286,17 @@ async function chargestations() {
 
     chargeLat = getMinimum.lat;
     chargeLong = getMinimum.long;
-    L.marker([chargeLat, chargeLong], {icon: greenIcon}).addTo(map)
-     
+    L.marker([chargeLat, chargeLong], {
+      icon: greenIcon
+    }).addTo(map)
+    .bindPopup(`
+    <ul>
+      <li>${ChargeDeviceName}</li>
+      <li>Status: ${ChargeDeviceStatus}</li>
+      <li>${numberOfConnectors} Connectors</li>
+      <li>Avail KWh: ${ConnectorRatedOutputkW}</li>
+    </ul>
+    `);
 
     chargeDuration();
     console.log(chargeSt);
