@@ -41,6 +41,7 @@ var SOC;
 var EVrange;
 var charger;
 var safeDrivableDistance;
+var evDrivableDistance;
 var StartLat;
 var StartLong;
 var EndLat;
@@ -71,18 +72,22 @@ function JourneyForm(event) {
     EVrange  = document.getElementById("EVrange").value;
     charger  = document.getElementById("charger").value;
     chargingDuration  = document.getElementById("chargeDUration").value;
-    console.log(jstart + ' is start, '+ jfinish + ' is finish, ' + SOC + '% is departure charge, ' + EVrange + ' miles is EVrange, ' + evBatterySize  + " is EV battery size " + chargingDuration + ' is Charge Duration, '+ charger + " is Chosen Charger ")
+    
+    // console.log(jstart + ' is start, '+ jfinish + ' is finish, ' + SOC + '% is departure charge, ' + EVrange + ' miles is EVrange, ' + evBatterySize  + " is EV battery size " + chargingDuration + ' is Charge Duration, '+ charger + " is Chosen Charger ")
 
     document.getElementById('journey').reset();
 
    //manipulation of form data.
     SOC = SOC/100;
+
+    evDrivableDistance = EVrange*SOC
+    // console.log(evDrivableDistance +' miles is the Drivable Range')
     //Subtract 10% battery power from the CBP for allowance.
     SOC = SOC-0.1;
 
     //calculate the safe Drivable Range of the EV (DR) using the SOC minus 10%.
     safeDrivableDistance = EVrange*SOC
-    console.log(safeDrivableDistance +' miles is the safe Drivable Range')
+    // console.log(safeDrivableDistance +' miles is the safe Drivable Range')
 
     //preferred duration divided by 60 to get the time in hours.
     chargingDuration = chargingDuration/60;
@@ -104,7 +109,7 @@ async function StartPoint(location) {
     }
     );
     // Log full response
-      console.log(response);
+      // console.log(response);
 
       // get the Geometry
       StartLat = response.data.results[0].geometry.location.lat;
@@ -112,8 +117,8 @@ async function StartPoint(location) {
       var FormattedAd = response.data.results[0].formatted_address;
       startPointGeo = [StartLat, StartLong];
 
-      console.log(FormattedAd);
-      console.log(StartLong);
+      // console.log(FormattedAd);
+      // console.log(StartLong);
       L.marker([StartLat, StartLong],
         {
         draggable: true,
@@ -141,7 +146,7 @@ async function EndPoint(location) {
         },
       }
     );
-    console.log(response);
+    // console.log(response);
 
       // get the Geometry
     EndLat = response.data.results[0].geometry.location.lat;
@@ -192,7 +197,14 @@ async function newMapLayer(){
  let journeyDistance =  await matrixAPIcall(jstart, jfinish);
 
  if (journeyDistance <= safeDrivableDistance){
- console.log("battery will be enough for this journey")
+  
+  routeAPIcall(jstart, jfinish);
+
+    Swal.fire(
+      'EV Charge Sufficient!',
+      'Your EV can complete this journey without a stop',
+      'success'
+    )
  // run the routing function
  } else if (journeyDistance > safeDrivableDistance)
   {
@@ -225,7 +237,7 @@ async function getMinimumCS(chargeStationId) {
         },
       }
     );
-    console.log(response.data);
+    // console.log(response.data);
     return response.data;
   } catch (error) {
     throw error.message;
@@ -283,7 +295,7 @@ async function chargestations() {
     let min = Math.min(...distance.map((item) => item.miles));
     let getMinimum = distance.filter((item) => item.miles === min)[0];
 
-    console.log(getMinimum);
+    // console.log(getMinimum);
 
     var actualChargeStation = await getMinimumCS(getMinimum.csID);
     var chargeSt = actualChargeStation.ChargeDevice[0];
@@ -298,8 +310,8 @@ async function chargestations() {
         ConnectorRatedOutputkW.push(chargeSt.Connector[i].RatedOutputkW)
       }
     chargerSpeed = Math.max(...ConnectorRatedOutputkW)
-    console.log(ConnectorRatedOutputkW)
-    console.log(chargerSpeed)
+    // console.log(ConnectorRatedOutputkW)
+    // console.log(chargerSpeed)
 
     chargeLat = getMinimum.lat;
     chargeLong = getMinimum.long;
@@ -307,7 +319,7 @@ async function chargestations() {
 
     chargePoint = chargePoint.toString();
 
-    console.log(chargePoint);
+    // console.log(chargePoint);
 
     L.marker([chargeLat, chargeLong], {
       icon: greenIcon
@@ -337,12 +349,12 @@ function chargeDuration() {
       
   //the replenish Charge will
   var batteryReplenished = chargerSpeed * chargingDuration;
-  console.log(chargingDuration + "hours");
-  console.log(batteryReplenished + "kWh");
+  // console.log(chargingDuration + "hours");
+  // console.log(batteryReplenished + "kWh");
 
       //percentage replenished is: 
   var percentageReplenished =batteryReplenished/evBatterySize;
-  console.log(percentageReplenished * 100 + '% is percentage charged')
+  // console.log(percentageReplenished * 100 + '% is percentage charged')
 
   StartLat = chargeLat;
   StartLong = chargeLong;
@@ -360,53 +372,74 @@ function itinerary(){
   itineraryId.appendChild(newList);
 }
 
-// function distanceCal (){
-//   const toRad = (number) => number * (Math.PI / 180);
-  
-//   var lat2 = EndLat;
-//   var lon2 = EndLong;
-//   var lat1 = StartLat;
-//   var lon1 = StartLong;
- 
-//   var R = 3958.8; // miles
-//   var x1 = lat2 - lat1;
-//   var dLat = toRad(x1);
-//   var x2 = lon2 - lon1;
-//   var dLon = toRad(x2);
-//   var a =
-//     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-//     Math.cos(toRad(lat1)) *
-//       Math.cos(toRad(lat2)) *
-//       Math.sin(dLon / 2) *
-//       Math.sin(dLon / 2);
-//   var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//   var d = R * c;
-
-//   console.log(d);
-// }
 
 
 async function matrixAPIcall(origins, destinations){
+  // try {
+    // const response = await axios.get(
+    //   'https://maps.googleapis.com/maps/api/distancematrix/json', 
+    //   {
+    //     params: {
+    //       origins: origins,
+    //       destinations: destinations,
+    //       mode: 'DRIVING',
+    //       units: "imperial",
+    //       key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
+    //     },
+    //   }
+    // );
+    try {
+      const response = await axios.get(
+        'http://www.mapquestapi.com/directions/v2/route', 
+        {
+          params: {
+            key: 'GDt292YcfGH8Pj8J3UNYMLKhFJOC0kUL',
+            from: origins,
+            to: destinations,
+          },
+        }
+      );
+      let distDifference = response.data.route.distance;
+    
+    return distDifference
+
+  } catch (error) {
+    throw error.message;
+  }
+}
+
+async function routeAPIcall(origins, destinations){
   try {
     const response = await axios.get(
-      'https://maps.googleapis.com/maps/api/distancematrix/json', 
+      'http://www.mapquestapi.com/directions/v2/route', 
       {
         params: {
-          origins: origins,
-          destinations: destinations,
-          mode: 'DRIVING',
-          units: "imperial",
-          key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
+          key: 'GDt292YcfGH8Pj8J3UNYMLKhFJOC0kUL',
+          from: origins,
+          to: destinations,
         },
       }
     );
-    console.log(response);
+    let distance = response.data.route.distance;
+    let destNarrative = response.data.route.legs[0].destNarrative;
+    let duration = response.data.route.legs[0].formattedTime;
+    let turns = response.data.route.legs[0].maneuvers.length
+    let route = [];
+    for (var i = 0; i < turns; i++) {
+      route.push(response.data.route.legs[0].maneuvers[i].startPoint)
+    }
 
-    let distDifference = parseFloat(response.data.rows[0].elements[0].distance.text.split(" ")[0]);
-    let duration = response.data.rows[0].elements[0].duration.text;
-    
+    var latlngs = route;
+    var polyline = L.polyline(latlngs, {color: '#33031f'}).addTo(map).bindPopup(`
+    <div>
+      <div><strong> ${destNarrative} </strong></div>
+      <div>Duration: Hr ${duration} Sec</div>
+      <div>Distance: ${distance} mi</div>
+    </div>
+    `).openPopup();
 
-    return distDifference
+    // console.log(response.data)
+
 
   } catch (error) {
     throw error.message;
