@@ -51,6 +51,9 @@ var chargingDuration;
 var evBatterySize
 var chargeLat;
 var chargeLong;
+var finalCs;
+
+var journeyData = [];
 
 
 // get Journey planner Form
@@ -75,7 +78,7 @@ function JourneyForm(event) {
     
     // console.log(jstart + ' is start, '+ jfinish + ' is finish, ' + SOC + '% is departure charge, ' + EVrange + ' miles is EVrange, ' + evBatterySize  + " is EV battery size " + chargingDuration + ' is Charge Duration, '+ charger + " is Chosen Charger ")
 
-    document.getElementById('journey').reset();
+    // document.getElementById('journey').reset();
 
    //manipulation of form data.
     SOC = SOC/100;
@@ -210,12 +213,14 @@ async function newMapLayer(){
   {
    while (journeyDistance > safeDrivableDistance)
    {
+    document.getElementById("form").style.display = "none";
     let chargePoint = await chargestations();
 
     journeyDistance = await matrixAPIcall(chargePoint, jfinish);
 
+    finalCs = chargePoint
    }
-  
+   routeAPIcall(finalCs, jfinish);
  }
   } catch (error) {
   throw error.message;
@@ -259,7 +264,8 @@ async function chargestations() {
         },
       }
     );
-
+    
+    
     let distance = [];
 
     for (i in response.data.ChargeDevice) {
@@ -315,11 +321,13 @@ async function chargestations() {
 
     chargeLat = getMinimum.lat;
     chargeLong = getMinimum.long;
-    let chargePoint = [chargeLat,chargeLong];
 
+    let initialPoint = [StartLat, StartLong];
+    initialPoint = initialPoint.toString()
+    let chargePoint = [chargeLat,chargeLong];
     chargePoint = chargePoint.toString();
 
-    // console.log(chargePoint);
+    console.log(initialPoint);
 
     L.marker([chargeLat, chargeLong], {
       icon: greenIcon
@@ -335,6 +343,24 @@ async function chargestations() {
     </div>
     `);
     chargeDuration();
+    routeAPIcall(initialPoint, chargePoint)
+
+    const itineraryDiv = document.getElementById('itinerary-div');
+    const createDiv = document.createElement('div')
+    createDiv.classList.add('itineraryData')
+    createDiv.innerHTML = `<div>
+    <div><strong>${ChargeDeviceName}</strong></div>
+    <div>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</div>
+    <div>${ChargeDevicePostTown}</div>
+    <div>Status: ${ChargeDeviceStatus}</div>
+    <div>${numberOfConnectors} Connectors</div>
+    <div>Avail KWh: ${ConnectorRatedOutputkW}</div>
+    </div>
+    `
+    itineraryDiv.appendChild(createDiv)
+    
+
+    console.log(createDiv)
   
     return chargePoint;
     
@@ -349,12 +375,12 @@ function chargeDuration() {
       
   //the replenish Charge will
   var batteryReplenished = chargerSpeed * chargingDuration;
-  // console.log(chargingDuration + "hours");
-  // console.log(batteryReplenished + "kWh");
+  console.log(chargingDuration + "hours");
+  console.log(batteryReplenished + "kWh");
 
       //percentage replenished is: 
   var percentageReplenished =batteryReplenished/evBatterySize;
-  // console.log(percentageReplenished * 100 + '% is percentage charged')
+  console.log(percentageReplenished * 100 + '% is percentage charged')
 
   StartLat = chargeLat;
   StartLong = chargeLong;
@@ -362,33 +388,20 @@ function chargeDuration() {
 }
 
 
-function itinerary(){
-  const itineraryDiv = document.getElementById("itinerary-div");
-  const newDiv = document.createElement("div");
-  const newList = document.createElement("ul")
-  console.log("add");
-  itineraryDiv.appendChild(newDiv);
-  newDiv.id = "itineraryId";
-  itineraryId.appendChild(newList);
-}
+// function itinerary(){
+//   const itineraryDiv = document.getElementById("itinerary-div");
+//   const newDiv = document.createElement("div");
+//   const newList = document.createElement("ul")
+//   console.log("add");
+//   itineraryDiv.appendChild(newDiv);
+//   newDiv.id = "itineraryId";
+//   itineraryId.appendChild(newList);
+// }
 
 
 
 async function matrixAPIcall(origins, destinations){
-  // try {
-    // const response = await axios.get(
-    //   'https://maps.googleapis.com/maps/api/distancematrix/json', 
-    //   {
-    //     params: {
-    //       origins: origins,
-    //       destinations: destinations,
-    //       mode: 'DRIVING',
-    //       units: "imperial",
-    //       key: 'AIzaSyAKf5i0oElPYrydoQFUiu5k7oBUrR2oIys',
-    //     },
-    //   }
-    // );
-    try {
+      try {
       const response = await axios.get(
         'http://www.mapquestapi.com/directions/v2/route', 
         {
