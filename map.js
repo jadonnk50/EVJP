@@ -345,18 +345,41 @@ async function chargestations() {
     chargeDuration();
     routeAPIcall(initialPoint, chargePoint)
 
-    const itineraryDiv = document.getElementById('itinerary-div');
+    // const itineraryDiv = document.getElementById('accordionExample');
+    // const createDiv = document.createElement('div')
+    // createDiv.classList.add("accordion")
+    // createDiv.innerHTML = `
+    //   <div class="accordion-item">
+    //       <h2 class="accordion-header" id="headingOne">
+    //         <div class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+    //         ${ChargeDeviceName}
+    //         </div>
+    //       </h2>
+    //       <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+    //         <div class="accordion-body">
+    //           <p>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</p>
+    //           <p>${ChargeDevicePostTown}</p>
+    //           <p>Status: ${ChargeDeviceStatus}</p>
+    //           <p>${numberOfConnectors} Connectors</p>
+    //           <p>Avail KWh: ${ConnectorRatedOutputkW}</p>
+    //         </div>
+    //       </div>
+    //     </div>
+    // `
+
+    const itineraryDiv = document.getElementById('accordionEmmanuel');
     const createDiv = document.createElement('div')
-    createDiv.classList.add('itineraryData')
-    createDiv.innerHTML = `<div>
-    <div><strong>${ChargeDeviceName}</strong></div>
-    <div>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</div>
-    <div>${ChargeDevicePostTown}</div>
-    <div>Status: ${ChargeDeviceStatus}</div>
-    <div>${numberOfConnectors} Connectors</div>
-    <div>Avail KWh: ${ConnectorRatedOutputkW}</div>
-    </div>
-    `
+    createDiv.classList.add("mb-3")
+    createDiv.innerHTML = `
+        <div class="accordion" onclick="accordion()">${ChargeDeviceName}</div>
+          <div class="panel">
+          <small>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</small>
+          ${ChargeDevicePostTown}<br>
+          Status: ${ChargeDeviceStatus}<br>
+          ${numberOfConnectors} Connectors<br>
+          Avail KWh: ${ConnectorRatedOutputkW}     
+      </div>
+`
     itineraryDiv.appendChild(createDiv)
     
 
@@ -458,3 +481,13 @@ async function routeAPIcall(origins, destinations){
     throw error.message;
   }
 }
+
+function accordion() {
+  console.log("clicked")
+    var x = document.getElementsByClassName("panel");
+    if (x.style.display === "none") {
+      x.style.display = "block";
+    } else {
+      x.style.display = "none";
+    }
+  }

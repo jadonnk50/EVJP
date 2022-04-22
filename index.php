@@ -13,6 +13,8 @@
 
    <!-- <bootstrap> -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
  
     <!-- <link rel="stylesheet" href="./signup.css"> -->
     <link rel="stylesheet" href="style.css"/>
@@ -35,25 +37,44 @@
     </div>
 
   <!-- input field -->
-    <div id="mySidenav" class="sidenav">
+    <div id="mySidenav" class="sidenav" >
       <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>  
       
       <section id="form">
         <div class="journeydetails">
           <form id='journey' >
-             <input type="text" id="journeystart" name="start" placeholder="The starting point of your trip" required>
-             <input type="text" id="journeyfinish" name="finish" placeholder="Destination" required>
-             <input type="text" id="evSOC" name="SOC" placeholder="Departure Charge %" required>
-             <input type="text" id="EVrange" name="EVrange" placeholder="Vehicle Range (in Miles)" required>
-             <input type="text" id="evBatterySize" name="EVBatterySize" placeholder="Your EV Battery Size (in kWh)" required>
-             <input type="text" id="chargeDUration" name="chargeDUration" placeholder="Preferred Charge Duration (in Minutes)" required>      
-            
-             <select id="charger" name="Charger Type" >
+          <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text" id="inputGroup-sizing-sm"><i class="bi bi-geo-alt me-1"></i></span>
+              <input type="text" id="journeystart" class="form-control" placeholder="Start Address or Post Code" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text" id="inputGroup-sizing-sm"><i class="bi bi-geo-alt-fill me-1"></i></span>
+              <input type="text" id="journeyfinish" class="form-control" placeholder="Destination Address or Post Code" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text" id="inputGroup-sizing-sm"><i class="bi bi-battery-half me-1"></i></span>
+              <input type="text" id="evSOC" class="form-control" placeholder="Departure Battery Charge in %" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text" id="inputGroup-sizing-sm"><i class="bi bi-arrow-right-circle-fill me-1"></i></span>
+              <input type="text" id="EVrange" class="form-control" placeholder="EV Range (in Miles)" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text" id="inputGroup-sizing-sm"><i class="bi bi-battery-full me-1"></i></span>
+              <input type="text" id="evBatterySize" class="form-control" placeholder="EV Battery Capacity (in kWh)" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text" id="inputGroup-sizing-sm"><i class="bi bi-stopwatch-fill me-1"></i></span>
+              <input type="text" id="chargeDUration" class="form-control" placeholder="Preferred Charge Duration (in Minutes)" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" required>
+          </div>
+          <div class="input-group input-group-sm mb-1">
+              <label class="input-group-text" for="inputGroupSelect01"><i class="bi bi-plug-fill me-1"></i></label>
+              <select class="form-select" id="charger" name="Charger Type" id="inputGroupSelect01">  
                 <option value="50">Fastest Charger Available</option>
                 <option value="22">Rapid Charge (22kWh)</option>
                 <option value="7">Fast Charge (7kWh)</option>
-                <option value="2.3">Slow Charge (2.3kWh)</option>
               </select>
+          </div>
 
               <input type="submit" value="Start Plan">
               <input type="submit" value="Refresh" onClick="refresh(this)">
@@ -61,9 +82,18 @@
         </div>
       </section>
 
-      <section id="itinerary-div">
-        <h2>Journey Details<h2>  
-      </section>
+    <div id="container">
+          <figure class="text-center">
+                <blockquote class="blockquote">
+                          <p>Journey Details</p>
+                </blockquote>
+                <figcaption class="blockquote-footer">
+                  Note that Charge stations might be unavailable
+                </figcaption>
+          </figure> 
+          <div class="container mt-2" id="accordionEmmanuel"></div>
+          
+    </div>
 
     </div>
 
