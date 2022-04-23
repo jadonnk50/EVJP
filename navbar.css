@@ -158,3 +158,21 @@ input[type=submit] {
 input[type=submit]:hover {
   background-color: #000200;
 }
+
+#replant {
+  width: auto;
+  height: auto;
+  text-align: center;
+  background-color: #440239;
+  color: white;
+  padding: 14px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  display: none;
+}
+
+#replant:hover {
+  background-color: #000200;
+}

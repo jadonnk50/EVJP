@@ -214,8 +214,9 @@ async function newMapLayer(){
    while (journeyDistance > safeDrivableDistance)
    {
     document.getElementById("form").style.display = "none";
-    let chargePoint = await chargestations();
+    document.getElementById("replant").style.display = "block";
 
+    let chargePoint = await chargestations();
     journeyDistance = await matrixAPIcall(chargePoint, jfinish);
 
     finalCs = chargePoint
@@ -342,42 +343,32 @@ async function chargestations() {
       <div>Avail KWh: ${ConnectorRatedOutputkW}</div>
     </div>
     `);
-    chargeDuration();
-    routeAPIcall(initialPoint, chargePoint)
+    let csDuration = chargeDuration();
+    console.log(csDuration);
 
-    // const itineraryDiv = document.getElementById('accordionExample');
-    // const createDiv = document.createElement('div')
-    // createDiv.classList.add("accordion")
-    // createDiv.innerHTML = `
-    //   <div class="accordion-item">
-    //       <h2 class="accordion-header" id="headingOne">
-    //         <div class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-    //         ${ChargeDeviceName}
-    //         </div>
-    //       </h2>
-    //       <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-    //         <div class="accordion-body">
-    //           <p>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</p>
-    //           <p>${ChargeDevicePostTown}</p>
-    //           <p>Status: ${ChargeDeviceStatus}</p>
-    //           <p>${numberOfConnectors} Connectors</p>
-    //           <p>Avail KWh: ${ConnectorRatedOutputkW}</p>
-    //         </div>
-    //       </div>
-    //     </div>
-    // `
+    let batteryPercent = csDuration.batteryPercent;
+    let stopDuration = csDuration.remainder;
+    let connectorKWh = csDuration.chargerSpeed; 
+
+    routeAPIcall(initialPoint, chargePoint)
 
     const itineraryDiv = document.getElementById('accordionEmmanuel');
     const createDiv = document.createElement('div')
     createDiv.classList.add("mb-3")
     createDiv.innerHTML = `
-        <div class="accordion" onclick="accordion()">${ChargeDeviceName}</div>
+        <div class="accordion pb-0" onclick="accordion()"><i class="bi bi-battery-charging me-1"></i>${ChargeDeviceName}
+            <div class="text-end fs-6 fw-lighter text-muted">
+            <small class="me-2"><i class="bi bi-plug-fill me-1"></i>${connectorKWh}kWh</small>        
+            <small class="me-2"><i class="bi bi-stopwatch me-1"></i>${stopDuration} mins.</small>  
+            <small><i class="bi bi-arrow-up"></i><i class="bi bi-battery-half me-1"></i>${batteryPercent}%</small>
+            </div>
+        </div>
           <div class="panel">
-          <small>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</small>
-          ${ChargeDevicePostTown}<br>
-          Status: ${ChargeDeviceStatus}<br>
-          ${numberOfConnectors} Connectors<br>
-          Avail KWh: ${ConnectorRatedOutputkW}     
+          <small><i class="bi bi-geo-fill me-1"></i>${ChargeDeviceStreet}, ${ChargeDevicePostCode}</small><br>
+          <small>${ChargeDevicePostTown}</small><br>
+          <small><i class="bi bi-check-circle-fill me-1"></i><strong>Status:</strong> ${ChargeDeviceStatus}</small><br>
+          <small><i class="bi bi-plug-fill me-1"></i>${numberOfConnectors} Connectors</small><br>
+          <small><i class="bi bi-lightning-charge-fill me-1"></i><strong>Avail KWh:</strong> ${ConnectorRatedOutputkW}</small><br>  
       </div>
 `
     itineraryDiv.appendChild(createDiv)
@@ -397,30 +388,36 @@ function chargeDuration() {
   chargerSpeed; //from the CS charging RatedOutput in KWh (Kilowatts per Hour)
       
   //the replenish Charge will
-  var batteryReplenished = chargerSpeed * chargingDuration;
-  console.log(chargingDuration + "hours");
-  console.log(batteryReplenished + "kWh");
+  let batteryReplenished = chargerSpeed * chargingDuration;
+  
 
       //percentage replenished is: 
-  var percentageReplenished =batteryReplenished/evBatterySize;
-  console.log(percentageReplenished * 100 + '% is percentage charged')
+  let percentageReplenished =batteryReplenished/evBatterySize;
+  // console.log(percentageReplenished * 100 + '% is percentage charged')
+
+  let remainder = chargingDuration * 60;
+  console.log(remainder  + " min");
+  if (percentageReplenished > 0.9){
+    remainder = percentageReplenished - 0.9;
+    remainder = remainder*evBatterySize;
+    remainder = remainder/chargerSpeed;
+    remainder = 1-remainder;
+    remainder = remainder*60;
+    remainder = Math.floor(remainder);
+    percentageReplenished = 0.9;
+  }
+  let batteryPercent = (percentageReplenished + 0.1) * 100;
+  batteryPercent = Math.floor(batteryPercent);
+  
+  let chargeDurationData = {chargerSpeed, batteryPercent, remainder};
+  // console.log(chargeDurationData)
 
   StartLat = chargeLat;
   StartLong = chargeLong;
   safeDrivableDistance = percentageReplenished * EVrange;
+
+  return chargeDurationData;
 }
-
-
-// function itinerary(){
-//   const itineraryDiv = document.getElementById("itinerary-div");
-//   const newDiv = document.createElement("div");
-//   const newList = document.createElement("ul")
-//   console.log("add");
-//   itineraryDiv.appendChild(newDiv);
-//   newDiv.id = "itineraryId";
-//   itineraryId.appendChild(newList);
-// }
-
 
 
 async function matrixAPIcall(origins, destinations){
@@ -466,7 +463,7 @@ async function routeAPIcall(origins, destinations){
     }
 
     var latlngs = route;
-    var polyline = L.polyline(latlngs, {color: '#33031f'}).addTo(map).bindPopup(`
+    var polyline = L.polyline(latlngs, {color: 'purple'}).addTo(map).bindPopup(`
     <div>
       <div><strong> ${destNarrative} </strong></div>
       <div>Duration: Hr ${duration} Sec</div>
@@ -483,11 +480,15 @@ async function routeAPIcall(origins, destinations){
 }
 
 function accordion() {
-  console.log("clicked")
     var x = document.getElementsByClassName("panel");
-    if (x.style.display === "none") {
-      x.style.display = "block";
-    } else {
-      x.style.display = "none";
-    }
-  }
+    var i;
+    for (i = 0; i < x.length; i++) {
+        // console.log(x[i])
+        if (x[i].style.display === "none") {
+        x[i].style.display = "block";
+        } else {
+        x[i].style.display = "none";
+        }
+      }
+}
+  

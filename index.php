@@ -83,12 +83,14 @@
       </section>
 
     <div id="container">
+    <div id="replant" onClick="replan()"> Plan New Journey </div>
           <figure class="text-center">
                 <blockquote class="blockquote">
                           <p>Journey Details</p>
                 </blockquote>
                 <figcaption class="blockquote-footer">
-                  Note that Charge stations might be unavailable
+                  Charging stations will show below. <br>
+                  Note that we don't control Chargestations availability.
                 </figcaption>
           </figure> 
           <div class="container mt-2" id="accordionEmmanuel"></div>
@@ -123,5 +125,10 @@
 <script>
   function refresh(){
     document.getElementById('journey').reset()
+      }
+
+  function replan(){
+    document.getElementById("form").style.display = "block";
+    document.getElementById("replant").style.display = "none";
       }
 </script>
