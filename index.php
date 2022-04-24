@@ -88,9 +88,11 @@
                 <blockquote class="blockquote">
                           <p>Journey Details</p>
                 </blockquote>
+                <div>
+                  <p id="displayDetails"><strong>0:0:0</strong></p>
+                </div>
                 <figcaption class="blockquote-footer">
-                  Charging stations will show below. <br>
-                  Note that we don't control Chargestations availability.
+                  click on Charge Station or Route for more details.
                 </figcaption>
           </figure> 
           <div class="container mt-2" id="accordionEmmanuel"></div>
