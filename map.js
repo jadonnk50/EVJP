@@ -399,7 +399,7 @@ function chargeDuration() {
   let batteryReplenished = chargerSpeed * chargingDuration;
   
 
-      //percentage replenished is: 
+      //percentage replenished is calculated here: 
   let percentageReplenished =batteryReplenished/evBatterySize;
 
   let remainder = chargingDuration * 60;
